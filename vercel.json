@@ -2,11 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/**/*.py",
+      "src": "api/app.py",
       "use": "@vercel/python"
     },
     {
       "src": "static/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "templates/**/*",
       "use": "@vercel/static"
     }
   ],
@@ -16,13 +20,16 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "/static/(.*)",
       "dest": "/static/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/templates/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/templates/$1"
     }
-  ],
-  "functions": {
-    "api/app.py": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
