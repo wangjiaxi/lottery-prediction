@@ -10,7 +10,7 @@
       "use": "@vercel/static"
     },
     {
-      "src": "templates/**/*",
+      "src": "templates/index.html",
       "use": "@vercel/static"
     }
   ],
@@ -26,10 +26,6 @@
     {
       "src": "/",
       "dest": "/templates/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/templates/$1"
     }
   ]
 }
