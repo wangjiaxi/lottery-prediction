@@ -43,7 +43,9 @@ Thumbs.db
 
 # Data files (don't commit large data files)
 *.csv
-*.json
+lottery_data.json
+# Allow full_lottery_data.json to be committed
+!full_lottery_data.json
 !requirements.txt
 
 # Logs
