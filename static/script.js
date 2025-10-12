@@ -42,7 +42,9 @@ class LotteryApp {
 
     async loadDataStatus() {
         try {
-            const response = await fetch('/api/data_status');
+            // 适配Vercel部署路径
+            const apiBase = window.location.hostname.includes('vercel.app') ? '/api' : '/api';
+            const response = await fetch(`${apiBase}/data_status`);
             const data = await response.json();
             
             if (data.success) {
@@ -88,7 +90,8 @@ class LotteryApp {
             const beforeCount = beforeData.total_records;
 
             // 执行数据更新
-            const updateResponse = await fetch('/api/update_data', {
+            const apiBase = window.location.hostname.includes('vercel.app') ? '/api' : '/api';
+            const updateResponse = await fetch(`${apiBase}/update_data`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -136,7 +139,8 @@ class LotteryApp {
             predictBtn.textContent = '正在生成...';
             predictBtn.disabled = true;
 
-            const response = await fetch('/api/get_predictions');
+            const apiBase = window.location.hostname.includes('vercel.app') ? '/api' : '/api';
+            const response = await fetch(`${apiBase}/get_predictions`);
             const data = await response.json();
             
             if (data.success) {
@@ -238,7 +242,8 @@ class LotteryApp {
             const limitSelect = document.getElementById('historyLimit');
             const limit = limitSelect ? limitSelect.value : 10;
             
-            const response = await fetch(`/api/get_history?limit=${limit}`);
+            const apiBase = window.location.hostname.includes('vercel.app') ? '/api' : '/api';
+            const response = await fetch(`${apiBase}/get_history?limit=${limit}`);
             const data = await response.json();
             
             if (data.success) {

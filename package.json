@@ -1,0 +1,16 @@
+{
+  "name": "lottery-prediction",
+  "version": "1.0.0",
+  "description": "大乐透号码预测系统 - Vercel部署版本",
+  "scripts": {
+    "dev": "python app.py",
+    "build": "echo 'No build step required for Python'",
+    "start": "python api/app.py"
+  },
+  "keywords": ["lottery", "prediction", "flask", "vercel"],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  }
+}
