@@ -42,26 +42,27 @@ Page({
   // 加载数据状态
   loadDataStatus() {
     const that = this
-    wx.request({
-      url: `${app.globalData.apiBase}/api/data_status`,
-      method: 'GET',
-      success(res) {
-        if (res.data.success) {
-          that.setData({
-            totalRecords: res.data.total_records || 0,
-            latestPeriod: res.data.latest_period || '暂无'
-          })
-        }
-      },
-      fail() {
-        Toast({
-          context: that,
-          selector: '#t-toast',
-          message: '网络连接失败',
-          theme: 'error',
-          direction: 'column'
+    
+    // 使用云函数
+    wx.cloud.callFunction({
+      name: 'lottery-api',
+      data: { action: 'data_status' }
+    }).then(res => {
+      if (res.result.success) {
+        that.setData({
+          totalRecords: res.result.total_records || 0,
+          latestPeriod: res.result.latest_period || '暂无'
         })
       }
+    }).catch(err => {
+      console.error('数据状态获取失败:', err)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '云函数调用失败',
+        theme: 'error',
+        direction: 'column'
+      })
     })
   },
 
@@ -73,47 +74,45 @@ Page({
     
     that.setData({ updatingData: true })
 
-    // 调用后端爬虫接口
-    wx.request({
-      url: `${app.globalData.apiBase}/api/update_data`,
-      method: 'POST',
-      timeout: 30000,
-      success(res) {
-        that.setData({ updatingData: false })
+    // 使用云函数
+    wx.cloud.callFunction({
+      name: 'lottery-api',
+      data: { action: 'update_data' }
+    }).then(res => {
+      that.setData({ updatingData: false })
 
-        if (res.data.success) {
-          const newRecords = res.data.new_records || 0
-          
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: newRecords > 0 ? `新增 ${newRecords} 条记录` : '数据已是最新',
-            theme: 'success',
-            direction: 'column'
-          })
-          
-          // 刷新数据状态
-          that.loadDataStatus()
-        } else {
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: res.data.message || '更新失败',
-            theme: 'error',
-            direction: 'column'
-          })
-        }
-      },
-      fail() {
-        that.setData({ updatingData: false })
+      if (res.result.success) {
+        const newRecords = res.result.new_records || 0
+        
         Toast({
           context: that,
           selector: '#t-toast',
-          message: '网络连接失败',
+          message: newRecords > 0 ? `新增 ${newRecords} 条记录` : '数据已是最新',
+          theme: 'success',
+          direction: 'column'
+        })
+        
+        // 刷新数据状态
+        that.loadDataStatus()
+      } else {
+        Toast({
+          context: that,
+          selector: '#t-toast',
+          message: res.result.message || '更新失败',
           theme: 'error',
           direction: 'column'
         })
       }
+    }).catch(err => {
+      that.setData({ updatingData: false })
+      console.error('更新数据失败:', err)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '云函数调用失败',
+        theme: 'error',
+        direction: 'column'
+      })
     })
   },
 
@@ -143,57 +142,57 @@ Page({
 
     that.setData({ generatingPredictions: true })
 
-    wx.request({
-      url: `${app.globalData.apiBase}/api/get_predictions`,
-      method: 'GET',
-      data: {
+    // 使用云函数
+    wx.cloud.callFunction({
+      name: 'lottery-api',
+      data: { 
+        action: 'get_predictions',
         strategy: that.data.strategy
-      },
-      success(res) {
-        that.setData({ generatingPredictions: false })
+      }
+    }).then(res => {
+      that.setData({ generatingPredictions: false })
 
-        if (res.data.success) {
-          const data = res.data.data
-          
-          that.setData({
-            hotNumbers: {
-              front: data.hot_numbers.front_numbers || [],
-              back: data.hot_numbers.back_numbers || []
-            },
-            coldNumbers: {
-              front: data.cold_numbers.front_numbers || [],
-              back: data.cold_numbers.back_numbers || []
-            },
-            showRecommendations: true
-          })
-          
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: '推荐生成成功',
-            theme: 'success',
-            direction: 'column'
-          })
-        } else {
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: res.data.message || '生成失败',
-            theme: 'error',
-            direction: 'column'
-          })
-        }
-      },
-      fail() {
-        that.setData({ generatingPredictions: false })
+      if (res.result.success) {
+        const data = res.result.data
+        
+        that.setData({
+          hotNumbers: {
+            front: data.hot_numbers.front_numbers || [],
+            back: data.hot_numbers.back_numbers || []
+          },
+          coldNumbers: {
+            front: data.cold_numbers.front_numbers || [],
+            back: data.cold_numbers.back_numbers || []
+          },
+          showRecommendations: true
+        })
+        
         Toast({
           context: that,
           selector: '#t-toast',
-          message: '网络连接失败',
+          message: '推荐生成成功',
+          theme: 'success',
+          direction: 'column'
+        })
+      } else {
+        Toast({
+          context: that,
+          selector: '#t-toast',
+          message: res.result.message || '生成失败',
           theme: 'error',
           direction: 'column'
         })
       }
+    }).catch(err => {
+      that.setData({ generatingPredictions: false })
+      console.error('生成推荐失败:', err)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '云函数调用失败',
+        theme: 'error',
+        direction: 'column'
+      })
     })
   },
 

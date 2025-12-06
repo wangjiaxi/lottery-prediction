@@ -33,47 +33,47 @@ Page({
     
     that.setData({ loading: true })
 
-    wx.request({
-      url: `${app.globalData.apiBase}/api/get_history`,
-      method: 'GET',
-      data: {
+    // 使用云函数
+    wx.cloud.callFunction({
+      name: 'lottery-api',
+      data: { 
+        action: 'get_history',
         offset: 0,
         limit: that.data.pageSize
-      },
-      success(res) {
-        that.setData({ loading: false })
+      }
+    }).then(res => {
+      that.setData({ loading: false })
 
-        if (res.data.success) {
-          const data = res.data.data || []
-          const total = res.data.total || data.length
-          
-          that.setData({
-            historyData: data,
-            displayedRecords: data.length,
-            totalRecords: total,
-            currentOffset: data.length,
-            hasMore: data.length < total
-          })
-        } else {
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: res.data.message || '加载失败',
-            theme: 'error',
-            direction: 'column'
-          })
-        }
-      },
-      fail() {
-        that.setData({ loading: false })
+      if (res.result.success) {
+        const data = res.result.data || []
+        const total = res.result.total || data.length
+        
+        that.setData({
+          historyData: data,
+          displayedRecords: data.length,
+          totalRecords: total,
+          currentOffset: data.length,
+          hasMore: data.length < total
+        })
+      } else {
         Toast({
           context: that,
           selector: '#t-toast',
-          message: '网络连接失败',
+          message: res.result.message || '加载失败',
           theme: 'error',
           direction: 'column'
         })
       }
+    }).catch(err => {
+      that.setData({ loading: false })
+      console.error('加载历史数据失败:', err)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '云函数调用失败',
+        theme: 'error',
+        direction: 'column'
+      })
     })
   },
 
@@ -85,68 +85,68 @@ Page({
 
     that.setData({ loading: true })
 
-    wx.request({
-      url: `${app.globalData.apiBase}/api/get_history`,
-      method: 'GET',
-      data: {
+    // 使用云函数
+    wx.cloud.callFunction({
+      name: 'lottery-api',
+      data: { 
+        action: 'get_history',
         offset: that.data.currentOffset,
         limit: that.data.pageSize
-      },
-      success(res) {
-        that.setData({ loading: false })
+      }
+    }).then(res => {
+      that.setData({ loading: false })
 
-        if (res.data.success) {
-          const newData = res.data.data || []
-          const total = res.data.total || that.data.totalRecords
+      if (res.result.success) {
+        const newData = res.result.data || []
+        const total = res.result.total || that.data.totalRecords
+        
+        if (newData.length > 0) {
+          const allData = that.data.historyData.concat(newData)
           
-          if (newData.length > 0) {
-            const allData = that.data.historyData.concat(newData)
-            
-            that.setData({
-              historyData: allData,
-              displayedRecords: allData.length,
-              totalRecords: total,
-              currentOffset: allData.length,
-              hasMore: allData.length < total
-            })
+          that.setData({
+            historyData: allData,
+            displayedRecords: allData.length,
+            totalRecords: total,
+            currentOffset: allData.length,
+            hasMore: allData.length < total
+          })
 
-            Toast({
-              context: that,
-              selector: '#t-toast',
-              message: `加载了 ${newData.length} 条数据`,
-              theme: 'success',
-              direction: 'column'
-            })
-          } else {
-            that.setData({ hasMore: false })
-            Toast({
-              context: that,
-              selector: '#t-toast',
-              message: '没有更多数据了',
-              theme: 'warning',
-              direction: 'column'
-            })
-          }
-        } else {
           Toast({
             context: that,
             selector: '#t-toast',
-            message: res.data.message || '加载失败',
-            theme: 'error',
+            message: `加载了 ${newData.length} 条数据`,
+            theme: 'success',
+            direction: 'column'
+          })
+        } else {
+          that.setData({ hasMore: false })
+          Toast({
+            context: that,
+            selector: '#t-toast',
+            message: '没有更多数据了',
+            theme: 'warning',
             direction: 'column'
           })
         }
-      },
-      fail() {
-        that.setData({ loading: false })
+      } else {
         Toast({
           context: that,
           selector: '#t-toast',
-          message: '网络连接失败',
+          message: res.result.message || '加载失败',
           theme: 'error',
           direction: 'column'
         })
       }
+    }).catch(err => {
+      that.setData({ loading: false })
+      console.error('加载更多数据失败:', err)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '云函数调用失败',
+        theme: 'error',
+        direction: 'column'
+      })
     })
   },
 
