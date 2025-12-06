@@ -1,0 +1,79 @@
+/* pages/history/history.wxss */
+.container {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+.header-info {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.info-text {
+  font-size: 28rpx;
+}
+
+.history-list {
+  padding: 0 20rpx;
+}
+
+.history-item {
+  margin-top: 20rpx;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.period-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.period-number {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.item-numbers {
+  padding: 20rpx 0;
+}
+
+.item-footer {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #f0f0f0;
+  font-size: 24rpx;
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.footer-label {
+  color: #999;
+}
+
+.footer-value {
+  color: #666;
+  font-weight: 500;
+}
+
+.load-more {
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+.no-more {
+  padding: 40rpx 20rpx;
+}

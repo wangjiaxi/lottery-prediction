@@ -1,16 +1,19 @@
 {
-  "name": "lottery-prediction",
-  "version": "1.0.0",
-  "description": "大乐透号码预测系统 - Vercel部署版本",
+  "name": "lottery-prediction-miniprogram",
+  "version": "2.0.0",
+  "description": "大乐透号码预测微信小程序 - TDesign版",
   "scripts": {
-    "dev": "python app.py",
-    "build": "echo 'No build step required for Python'",
-    "start": "python api/app.py"
+    "api": "cd api-server && python app.py",
+    "crawler": "python data_crawler.py",
+    "full-crawler": "python full_data_crawler.py",
+    "test-api": "python test_api.py",
+    "setup": "cd miniprogram && npm install"
   },
-  "keywords": ["lottery", "prediction", "flask", "vercel"],
+  "keywords": ["lottery", "prediction", "miniprogram", "wechat", "tdesign"],
   "author": "Your Name",
   "license": "MIT",
-  "engines": {
-    "node": ">=14"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/lottery-prediction-miniprogram"
   }
 }

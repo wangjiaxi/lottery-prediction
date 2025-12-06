@@ -1,0 +1,111 @@
+/**app.wxss**/
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 200rpx 0;
+  box-sizing: border-box;
+}
+
+/* 全局样式 */
+page {
+  background-color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', SimSun, sans-serif;
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 20rpx 40rpx;
+  border-radius: 50rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-secondary {
+  background: #4ecdc4;
+  color: white;
+}
+
+.btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 5rpx 15rpx rgba(0,0,0,0.3);
+}
+
+/* 卡片样式 */
+.card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.1);
+}
+
+/* 状态显示 */
+.status-text {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+  margin: 20rpx 0;
+}
+
+.status-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+/* 号码显示 */
+.numbers-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15rpx;
+  margin: 30rpx 0;
+}
+
+.number-ball {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 5rpx 15rpx rgba(0,0,0,0.2);
+}
+
+.front-ball {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+}
+
+.back-ball {
+  background: linear-gradient(135deg, #4ecdc4, #6de0d8);
+}
+
+/* 标题样式 */
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin: 30rpx 0 20rpx;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+  margin-bottom: 30rpx;
+}

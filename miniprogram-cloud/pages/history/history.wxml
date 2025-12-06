@@ -1,0 +1,86 @@
+<!--pages/history/history.wxml-->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <text class="title">历史开奖数据</text>
+    <text class="subtitle">大乐透历史开奖记录</text>
+  </view>
+
+  <!-- 控制面板 -->
+  <view class="control-panel card">
+    <view class="control-item">
+      <text class="control-label">显示期数：</text>
+      <picker class="picker" value="{{selectedLimit}}" range="{{limitOptions}}" range-key="label" bindchange="onLimitChange">
+        <view class="picker-view">{{limitOptions[selectedLimit].label}}</view>
+      </picker>
+    </view>
+    <button class="btn btn-primary" bindtap="loadHistoryData" loading="{{loading}}">
+      {{loading ? '加载中...' : '加载数据'}}
+    </button>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-card card" wx:if="{{historyData.length > 0}}">
+    <view class="stats-item">
+      <text class="stats-label">总记录数：</text>
+      <text class="stats-value">{{historyData.length}}</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-label">最新期次：</text>
+      <text class="stats-value">{{historyData[0].period}}</text>
+    </view>
+  </view>
+
+  <!-- 历史数据表格 -->
+  <view class="history-container" wx:if="{{historyData.length > 0}}">
+    <scroll-view class="table-scroll" scroll-y>
+      <view class="history-table">
+        <!-- 表头 -->
+        <view class="table-header">
+          <view class="table-cell">期次</view>
+          <view class="table-cell">开奖日期</view>
+          <view class="table-cell">前区号码</view>
+          <view class="table-cell">后区号码</view>
+        </view>
+
+        <!-- 数据行 -->
+        <view class="table-row" wx:for="{{historyData}}" wx:key="period">
+          <view class="table-cell period">{{item.period}}</view>
+          <view class="table-cell date">{{item.date}}</view>
+          <view class="table-cell numbers">
+            <view class="number-container">
+              <view class="number-ball front-ball" wx:for="{{item.front_numbers}}" wx:key="index">
+                {{item}}
+              </view>
+            </view>
+          </view>
+          <view class="table-cell numbers">
+            <view class="number-container">
+              <view class="number-ball back-ball" wx:for="{{item.back_numbers}}" wx:key="index">
+                {{item}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{historyData.length === 0 && !loading}}">
+    <text class="empty-text">暂无历史数据</text>
+    <text class="empty-subtext">请先获取最新数据</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-text">正在加载数据...</text>
+  </view>
+
+  <!-- 返回按钮 -->
+  <view class="footer">
+    <button class="btn btn-secondary" bindtap="goBack">
+      返回首页
+    </button>
+  </view>
+</view>

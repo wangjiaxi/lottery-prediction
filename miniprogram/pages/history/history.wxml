@@ -1,0 +1,76 @@
+<!--pages/history/history.wxml-->
+<view class="container">
+  <view class="header-info">
+    <view class="info-text">共 {{totalRecords}} 条数据，已显示 {{displayedRecords}} 条</view>
+  </view>
+
+  <!-- 历史数据列表 -->
+  <view class="history-list">
+    <block wx:for="{{historyData}}" wx:key="period">
+      <view class="history-item card">
+        <view class="item-header">
+          <view class="period-info">
+            <text class="period-number">第 {{item.period}} 期</text>
+            <t-tag theme="primary" variant="light" size="small">{{item.date}}</t-tag>
+          </view>
+        </view>
+        
+        <view class="item-numbers">
+          <view class="numbers-row">
+            <block wx:for="{{item.front_numbers}}" wx:key="index" wx:for-item="num">
+              <view class="number-ball front">{{num}}</view>
+            </block>
+            <view class="number-divider">+</view>
+            <block wx:for="{{item.back_numbers}}" wx:key="index" wx:for-item="num">
+              <view class="number-ball back">{{num}}</view>
+            </block>
+          </view>
+        </view>
+
+        <!-- 销售额和奖池信息（如果有） -->
+        <view class="item-footer" wx:if="{{item.sales_amount || item.pool_balance}}">
+          <view class="footer-item" wx:if="{{item.sales_amount}}">
+            <text class="footer-label">销售额:</text>
+            <text class="footer-value">{{item.sales_amount}}</text>
+          </view>
+          <view class="footer-item" wx:if="{{item.pool_balance}}">
+            <text class="footer-label">奖池:</text>
+            <text class="footer-value">{{item.pool_balance}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 加载更多按钮 -->
+  <view class="load-more" wx:if="{{hasMore}}">
+    <t-button 
+      theme="default" 
+      variant="outline" 
+      block 
+      loading="{{loading}}"
+      bind:tap="loadMore"
+    >
+      {{loading ? '加载中...' : '加载更多 (每次10条)'}}
+    </t-button>
+  </view>
+
+  <!-- 没有更多数据提示 -->
+  <view class="no-more" wx:if="{{!hasMore && historyData.length > 0}}">
+    <t-divider>已加载全部数据</t-divider>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{historyData.length === 0 && !loading}}">
+    <view class="empty-icon">📭</view>
+    <view class="empty-text">暂无历史数据</view>
+    <view style="margin-top: 20rpx;">
+      <t-button theme="primary" size="small" bind:tap="goToIndex">
+        去首页获取数据
+      </t-button>
+    </view>
+  </view>
+</view>
+
+<!-- Toast提示 -->
+<t-toast id="t-toast" />
