@@ -16,13 +16,4 @@
   background: linear-gradient(135deg, #ffb347 0%, #ffd700 100%);
 }
 
-/* Canvas样式 */
-#shareCanvas {
-  position: fixed;
-  top: -9999px;
-  left: -9999px;
-  width: 375px;
-  height: 667px;
-  background: #fff;
-  z-index: -1;
-}
+

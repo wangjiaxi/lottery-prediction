@@ -89,14 +89,14 @@
     
     <view style="display: flex; gap: 16rpx; margin-bottom: 16rpx;">
       <t-button theme="warning" style="flex: 1;" bind:tap="shareImage">
-        📷 生成图片
+        📷 查看图片
       </t-button>
       <t-button theme="primary" variant="outline" style="flex: 1;" bind:tap="shareText">
         📝 复制文字
       </t-button>
     </view>
     <view style="font-size: 24rpx; color: #999; text-align: center;">
-      图片分享支持预览，文字分享可粘贴到任何地方
+      图片为固定模板，文字包含当前推荐号码
     </view>
   </view>
 
@@ -109,8 +109,7 @@
   </view>
 </view>
 
-<!-- Canvas用于生成分享图片 -->
-<canvas type="2d" id="shareCanvas" style="position: fixed; top: -9999px; left: -9999px; width: 375px; height: 600px;"></canvas>
+
 
 <!-- Toast提示 -->
 <t-toast id="t-toast" />

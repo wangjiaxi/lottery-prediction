@@ -237,7 +237,7 @@ Page({
     })
   },
 
-  // 分享功能 - 生成当前页面截图
+  // 分享功能 - 使用固定图片
   shareImage() {
     const that = this
     
@@ -253,240 +253,46 @@ Page({
       return
     }
     
-    // 显示加载提示
-    wx.showLoading({
-      title: '正在生成分享图片...'
-    })
-
-    try {
-      // 使用新的Canvas 2D API
-      const query = wx.createSelectorQuery()
-      query.select('#shareCanvas')
-        .fields({ node: true, size: true })
-        .exec((res) => {
-          if (res && res[0]) {
-            const canvas = res[0].node
-            const ctx = canvas.getContext('2d')
-            
-            // 设置Canvas尺寸 (使用2倍分辨率提高清晰度)
-            const dpr = wx.getSystemInfoSync().pixelRatio
-            canvas.width = 375 * dpr
-            canvas.height = 600 * dpr
-            ctx.scale(dpr, dpr)
-            
-            // 绘制背景
-            ctx.fillStyle = '#ffffff'
-            ctx.fillRect(0, 0, 375, 600)
-            
-            // 绘制顶部装饰条
-            ctx.fillStyle = '#0052D9'
-            ctx.fillRect(0, 0, 375, 80)
-            
-            // 绘制标题
-            ctx.fillStyle = '#ffffff'
-            ctx.font = 'bold 24px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.fillText('大乐透号码推荐', 187, 50)
-            
-            let currentY = 120
-            
-            // 绘制数据状态
-            ctx.fillStyle = '#666666'
-            ctx.font = '14px sans-serif'
-            ctx.textAlign = 'left'
-            ctx.fillText(`数据总量: ${that.data.totalRecords}条`, 30, currentY)
-            currentY += 25
-            ctx.fillText(`最新期次: ${that.data.latestPeriod}`, 30, currentY)
-            currentY += 40
-            
-            // 绘制推荐号码（如果有）
-            if (that.data.showRecommendations) {
-              // 热门号码区域
-              ctx.fillStyle = '#ff6b6b'
-              ctx.font = 'bold 16px sans-serif'
-              ctx.fillText('🔥 热门推荐', 30, currentY)
-              currentY += 30
-              
-              // 绘制号码球
-              that.drawNumberBalls(ctx, that.data.hotNumbers.front, that.data.hotNumbers.back, currentY)
-              currentY += 80
-              
-              // 冷门号码区域
-              ctx.fillStyle = '#4ecdc4'
-              ctx.font = 'bold 16px sans-serif'
-              ctx.fillText('❄️ 冷门推荐', 30, currentY)
-              currentY += 30
-              
-              // 绘制号码球
-              that.drawNumberBalls(ctx, that.data.coldNumbers.front, that.data.coldNumbers.back, currentY)
-              currentY += 80
-            }
-            
-            // 绘制随机号码（如果有）
-            if (that.data.showRandom) {
-              ctx.fillStyle = '#95de64'
-              ctx.font = 'bold 16px sans-serif'
-              ctx.fillText('🎲 随机号码', 30, currentY)
-              currentY += 30
-              
-              // 绘制号码球
-              that.drawNumberBalls(ctx, that.data.randomNumbers.front, that.data.randomNumbers.back, currentY)
-              currentY += 80
-            }
-            
-            // 绘制分割线
-            ctx.strokeStyle = '#e0e0e0'
-            ctx.lineWidth = 1
-            ctx.beginPath()
-            ctx.moveTo(30, currentY)
-            ctx.lineTo(345, currentY)
-            ctx.stroke()
-            currentY += 20
-            
-            // 绘制免责声明
-            ctx.fillStyle = '#999999'
-            ctx.font = '12px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.fillText('仅供娱乐参考，理性购彩', 187, currentY)
-            currentY += 20
-            
-            // 绘制时间
-            const now = new Date()
-            const timeStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-            ctx.fillText(timeStr, 187, currentY)
-            
-            // 生成图片
-            setTimeout(() => {
-              wx.canvasToTempFilePath({
-                canvas: canvas,
-                success: function(res) {
-                  const tempFilePath = res.tempFilePath
-                  
-                  wx.hideLoading()
-                  
-                  // 预览并保存图片
-                  wx.previewImage({
-                    urls: [tempFilePath],
-                    current: 0,
-                    success: function() {
-                      Toast({
-                        context: that,
-                        selector: '#t-toast',
-                        message: '长按图片可保存到相册',
-                        theme: 'success',
-                        direction: 'column',
-                        duration: 3000
-                      })
-                    },
-                    fail: function(err) {
-                      console.error('预览图片失败:', err)
-                      // 直接尝试保存
-                      wx.saveImageToPhotosAlbum({
-                        filePath: tempFilePath,
-                        success: function() {
-                          Toast({
-                            context: that,
-                            selector: '#t-toast',
-                            message: '图片已保存到相册',
-                            theme: 'success',
-                            direction: 'column'
-                          })
-                        },
-                        fail: function(saveErr) {
-                          console.error('保存图片失败:', saveErr)
-                          Toast({
-                            context: that,
-                            selector: '#t-toast',
-                            message: '请长按图片保存',
-                            theme: 'warning',
-                            direction: 'column'
-                          })
-                        }
-                      })
-                    }
-                  })
-                },
-                fail: function(err) {
-                  wx.hideLoading()
-                  console.error('生成图片失败:', err)
-                  Toast({
-                    context: that,
-                    selector: '#t-toast',
-                    message: '生成图片失败，请重试',
-                    theme: 'error',
-                    direction: 'column'
-                  })
-                }
-              })
-            }, 500)
-          } else {
-            wx.hideLoading()
+    // 直接预览固定图片
+    wx.previewImage({
+      urls: ['/miniprogram/分享页.png'],
+      current: 0,
+      success: function() {
+        Toast({
+          context: that,
+          selector: '#t-toast',
+          message: '长按图片可保存到相册',
+          theme: 'success',
+          direction: 'column',
+          duration: 3000
+        })
+      },
+      fail: function(err) {
+        console.error('预览图片失败:', err)
+        // 尝试保存到相册
+        wx.saveImageToPhotosAlbum({
+          filePath: '/miniprogram/分享页.png',
+          success: function() {
             Toast({
               context: that,
               selector: '#t-toast',
-              message: 'Canvas获取失败',
-              theme: 'error',
+              message: '图片已保存到相册',
+              theme: 'success',
+              direction: 'column'
+            })
+          },
+          fail: function(saveErr) {
+            console.error('保存图片失败:', saveErr)
+            Toast({
+              context: that,
+              selector: '#t-toast',
+              message: '请长按图片保存',
+              theme: 'warning',
               direction: 'column'
             })
           }
         })
-    } catch (error) {
-      wx.hideLoading()
-      console.error('分享图片生成异常:', error)
-      Toast({
-        context: that,
-        selector: '#t-toast',
-        message: '生成失败，请重试',
-        theme: 'error',
-        direction: 'column'
-      })
-    }
-  },
-
-  // 绘制号码球的辅助方法
-  drawNumberBalls(ctx, frontNumbers, backNumbers, startY) {
-    const ballRadius = 18
-    const ballSpacing = 35
-    let currentX = 30
-    
-    // 绘制前区号码
-    ctx.font = 'bold 14px sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    
-    frontNumbers.forEach((num, index) => {
-      // 绘制红色球
-      ctx.fillStyle = '#ff4444'
-      ctx.beginPath()
-      ctx.arc(currentX + ballRadius, startY + ballRadius, ballRadius, 0, 2 * Math.PI)
-      ctx.fill()
-      
-      // 绘制数字
-      ctx.fillStyle = '#ffffff'
-      ctx.fillText(num, currentX + ballRadius, startY + ballRadius)
-      
-      currentX += ballSpacing + ballRadius * 2
-    })
-    
-    // 绘制加号
-    ctx.fillStyle = '#666666'
-    ctx.font = 'bold 20px sans-serif'
-    ctx.fillText('+', currentX + 10, startY + ballRadius)
-    currentX += 35
-    
-    // 绘制后区号码
-    backNumbers.forEach((num, index) => {
-      // 绘制蓝色球
-      ctx.fillStyle = '#4444ff'
-      ctx.beginPath()
-      ctx.arc(currentX + ballRadius, startY + ballRadius, ballRadius, 0, 2 * Math.PI)
-      ctx.fill()
-      
-      // 绘制数字
-      ctx.fillStyle = '#ffffff'
-      ctx.fillText(num, currentX + ballRadius, startY + ballRadius)
-      
-      currentX += ballSpacing + ballRadius * 2
+      }
     })
   },
 
@@ -560,7 +366,7 @@ Page({
     return {
       title: title,
       path: '/pages/index/index',
-      imageUrl: '/images/share-cover.jpg'
+      imageUrl: '/miniprogram/分享页.png'
     }
   },
 
@@ -580,7 +386,7 @@ Page({
     
     return {
       title: title,
-      imageUrl: '/images/share-cover.jpg'
+      imageUrl: '/miniprogram/分享页.png'
     }
   }
 })

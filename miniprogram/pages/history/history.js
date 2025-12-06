@@ -162,7 +162,7 @@ Page({
     return {
       title: '大乐透历史数据 - 查看往期开奖结果',
       path: '/pages/history/history',
-      imageUrl: '/images/share-cover.jpg'
+      imageUrl: '/miniprogram/分享页.png'
     }
   },
 
@@ -170,7 +170,7 @@ Page({
   onShareTimeline() {
     return {
       title: '大乐透历史数据 - 查看往期开奖结果',
-      imageUrl: '/images/share-cover.jpg'
+      imageUrl: '/miniprogram/分享页.png'
     }
   }
 })
