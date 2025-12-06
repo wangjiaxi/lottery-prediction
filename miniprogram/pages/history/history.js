@@ -155,5 +155,22 @@ Page({
     wx.switchTab({
       url: '/pages/index/index'
     })
+  },
+
+  // 转发功能
+  onShareAppMessage() {
+    return {
+      title: '大乐透历史数据 - 查看往期开奖结果',
+      path: '/pages/history/history',
+      imageUrl: '/images/share-cover.jpg'
+    }
+  },
+
+  // 分享到朋友圈
+  onShareTimeline() {
+    return {
+      title: '大乐透历史数据 - 查看往期开奖结果',
+      imageUrl: '/images/share-cover.jpg'
+    }
   }
 })

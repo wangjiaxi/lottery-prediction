@@ -3,3 +3,26 @@
   min-height: 100vh;
   padding-bottom: 40rpx;
 }
+
+/* 分享按钮样式 */
+.share-button {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+}
+
+.share-button:hover {
+  background: linear-gradient(135deg, #ffb347 0%, #ffd700 100%);
+}
+
+/* Canvas样式 */
+#shareCanvas {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: 375px;
+  height: 667px;
+  background: #fff;
+  z-index: -1;
+}

@@ -82,6 +82,16 @@
     </block>
   </view>
 
+  <!-- 分享功能 -->
+  <view class="card">
+    <view class="card-title">分享推荐</view>
+    <view class="card-desc">生成当前界面截图分享给朋友</view>
+    
+    <t-button theme="warning" block bind:tap="shareImage">
+      生成分享图片
+    </t-button>
+  </view>
+
   <!-- 免责声明 -->
   <view class="disclaimer">
     <view class="disclaimer-title">⚠️ 免责声明</view>
@@ -90,6 +100,9 @@
     </view>
   </view>
 </view>
+
+<!-- Canvas用于生成分享图片 -->
+<canvas canvas-id="shareCanvas" style="position: fixed; top: -9999px; left: -9999px; width: 375px; height: 667px;"></canvas>
 
 <!-- Toast提示 -->
 <t-toast id="t-toast" />

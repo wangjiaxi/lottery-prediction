@@ -49,5 +49,12 @@
     "request": 30000,
     "downloadFile": 10000
   },
-  "debug": false
+  "debug": false,
+  "permission": {
+    "scope.writePhotosAlbum": {
+      "desc": "需要保存分享图片到相册"
+    }
+  },
+  "shareAppMessage": true,
+  "shareTimeline": true
 }
