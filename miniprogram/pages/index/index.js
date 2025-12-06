@@ -241,189 +241,324 @@ Page({
   shareImage() {
     const that = this
     
+    // 检查是否有数据可以分享
+    if (!that.data.showRecommendations && !that.data.showRandom) {
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '请先生成号码再分享',
+        theme: 'warning',
+        direction: 'column'
+      })
+      return
+    }
+    
     // 显示加载提示
-    Toast({
-      context: that,
-      selector: '#t-toast',
-      message: '正在生成分享图片...',
-      theme: 'loading',
-      direction: 'column'
+    wx.showLoading({
+      title: '正在生成分享图片...'
     })
 
-    // 获取当前页面截图
-    wx.createSelectorQuery()
-      .select('.container')
-      .boundingClientRect()
-      .exec(function(res) {
-        if (res && res[0]) {
-          const { width, height } = res[0]
-          
-          // 使用canvas绘制页面内容
-          const canvasId = 'shareCanvas'
-          const ctx = wx.createCanvasContext(canvasId, that)
-          
-          // 设置canvas大小
-          ctx.scale(2, 2) // 提高清晰度
-          
-          // 绘制背景
-          ctx.setFillStyle('#ffffff')
-          ctx.fillRect(0, 0, width * 2, height * 2)
-          
-          // 绘制标题
-          ctx.setFillStyle('#333333')
-          ctx.setFontSize(18)
-          ctx.setTextAlign('center')
-          ctx.fillText('大乐透号码推荐', width, 30)
-          
-          // 绘制数据状态
-          ctx.setFillStyle('#666666')
-          ctx.setFontSize(14)
-          ctx.setTextAlign('left')
-          ctx.fillText(`数据总量: ${that.data.totalRecords}条`, 20, 60)
-          ctx.fillText(`最新期次: ${that.data.latestPeriod}`, 20, 85)
-          
-          let currentY = 110
-          
-          // 绘制推荐号码（如果有）
-          if (that.data.showRecommendations) {
-            // 绘制热门号码
-            ctx.setFillStyle('#ff6b6b')
-            ctx.setFontSize(16)
-            ctx.fillText('热门推荐:', 20, currentY)
+    try {
+      // 使用新的Canvas 2D API
+      const query = wx.createSelectorQuery()
+      query.select('#shareCanvas')
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (res && res[0]) {
+            const canvas = res[0].node
+            const ctx = canvas.getContext('2d')
+            
+            // 设置Canvas尺寸 (使用2倍分辨率提高清晰度)
+            const dpr = wx.getSystemInfoSync().pixelRatio
+            canvas.width = 375 * dpr
+            canvas.height = 600 * dpr
+            ctx.scale(dpr, dpr)
+            
+            // 绘制背景
+            ctx.fillStyle = '#ffffff'
+            ctx.fillRect(0, 0, 375, 600)
+            
+            // 绘制顶部装饰条
+            ctx.fillStyle = '#0052D9'
+            ctx.fillRect(0, 0, 375, 80)
+            
+            // 绘制标题
+            ctx.fillStyle = '#ffffff'
+            ctx.font = 'bold 24px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText('大乐透号码推荐', 187, 50)
+            
+            let currentY = 120
+            
+            // 绘制数据状态
+            ctx.fillStyle = '#666666'
+            ctx.font = '14px sans-serif'
+            ctx.textAlign = 'left'
+            ctx.fillText(`数据总量: ${that.data.totalRecords}条`, 30, currentY)
             currentY += 25
+            ctx.fillText(`最新期次: ${that.data.latestPeriod}`, 30, currentY)
+            currentY += 40
             
-            const hotFront = that.data.hotNumbers.front.join(' ')
-            const hotBack = that.data.hotNumbers.back.join(' ')
-            ctx.setFillStyle('#333333')
-            ctx.setFontSize(14)
-            ctx.fillText(`前区: ${hotFront}`, 20, currentY)
+            // 绘制推荐号码（如果有）
+            if (that.data.showRecommendations) {
+              // 热门号码区域
+              ctx.fillStyle = '#ff6b6b'
+              ctx.font = 'bold 16px sans-serif'
+              ctx.fillText('🔥 热门推荐', 30, currentY)
+              currentY += 30
+              
+              // 绘制号码球
+              that.drawNumberBalls(ctx, that.data.hotNumbers.front, that.data.hotNumbers.back, currentY)
+              currentY += 80
+              
+              // 冷门号码区域
+              ctx.fillStyle = '#4ecdc4'
+              ctx.font = 'bold 16px sans-serif'
+              ctx.fillText('❄️ 冷门推荐', 30, currentY)
+              currentY += 30
+              
+              // 绘制号码球
+              that.drawNumberBalls(ctx, that.data.coldNumbers.front, that.data.coldNumbers.back, currentY)
+              currentY += 80
+            }
+            
+            // 绘制随机号码（如果有）
+            if (that.data.showRandom) {
+              ctx.fillStyle = '#95de64'
+              ctx.font = 'bold 16px sans-serif'
+              ctx.fillText('🎲 随机号码', 30, currentY)
+              currentY += 30
+              
+              // 绘制号码球
+              that.drawNumberBalls(ctx, that.data.randomNumbers.front, that.data.randomNumbers.back, currentY)
+              currentY += 80
+            }
+            
+            // 绘制分割线
+            ctx.strokeStyle = '#e0e0e0'
+            ctx.lineWidth = 1
+            ctx.beginPath()
+            ctx.moveTo(30, currentY)
+            ctx.lineTo(345, currentY)
+            ctx.stroke()
             currentY += 20
-            ctx.fillText(`后区: ${hotBack}`, 20, currentY)
-            currentY += 35
             
-            // 绘制冷门号码
-            ctx.setFillStyle('#4ecdc4')
-            ctx.setFontSize(16)
-            ctx.fillText('冷门推荐:', 20, currentY)
-            currentY += 25
-            
-            const coldFront = that.data.coldNumbers.front.join(' ')
-            const coldBack = that.data.coldNumbers.back.join(' ')
-            ctx.setFillStyle('#333333')
-            ctx.setFontSize(14)
-            ctx.fillText(`前区: ${coldFront}`, 20, currentY)
+            // 绘制免责声明
+            ctx.fillStyle = '#999999'
+            ctx.font = '12px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText('仅供娱乐参考，理性购彩', 187, currentY)
             currentY += 20
-            ctx.fillText(`后区: ${coldBack}`, 20, currentY)
-            currentY += 35
+            
+            // 绘制时间
+            const now = new Date()
+            const timeStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+            ctx.fillText(timeStr, 187, currentY)
+            
+            // 生成图片
+            setTimeout(() => {
+              wx.canvasToTempFilePath({
+                canvas: canvas,
+                success: function(res) {
+                  const tempFilePath = res.tempFilePath
+                  
+                  wx.hideLoading()
+                  
+                  // 预览并保存图片
+                  wx.previewImage({
+                    urls: [tempFilePath],
+                    current: 0,
+                    success: function() {
+                      Toast({
+                        context: that,
+                        selector: '#t-toast',
+                        message: '长按图片可保存到相册',
+                        theme: 'success',
+                        direction: 'column',
+                        duration: 3000
+                      })
+                    },
+                    fail: function(err) {
+                      console.error('预览图片失败:', err)
+                      // 直接尝试保存
+                      wx.saveImageToPhotosAlbum({
+                        filePath: tempFilePath,
+                        success: function() {
+                          Toast({
+                            context: that,
+                            selector: '#t-toast',
+                            message: '图片已保存到相册',
+                            theme: 'success',
+                            direction: 'column'
+                          })
+                        },
+                        fail: function(saveErr) {
+                          console.error('保存图片失败:', saveErr)
+                          Toast({
+                            context: that,
+                            selector: '#t-toast',
+                            message: '请长按图片保存',
+                            theme: 'warning',
+                            direction: 'column'
+                          })
+                        }
+                      })
+                    }
+                  })
+                },
+                fail: function(err) {
+                  wx.hideLoading()
+                  console.error('生成图片失败:', err)
+                  Toast({
+                    context: that,
+                    selector: '#t-toast',
+                    message: '生成图片失败，请重试',
+                    theme: 'error',
+                    direction: 'column'
+                  })
+                }
+              })
+            }, 500)
+          } else {
+            wx.hideLoading()
+            Toast({
+              context: that,
+              selector: '#t-toast',
+              message: 'Canvas获取失败',
+              theme: 'error',
+              direction: 'column'
+            })
           }
-          
-          // 绘制随机号码（如果有）
-          if (that.data.showRandom) {
-            ctx.setFillStyle('#95de64')
-            ctx.setFontSize(16)
-            ctx.fillText('随机号码:', 20, currentY)
-            currentY += 25
-            
-            const randomFront = that.data.randomNumbers.front.join(' ')
-            const randomBack = that.data.randomNumbers.back.join(' ')
-            ctx.setFillStyle('#333333')
-            ctx.setFontSize(14)
-            ctx.fillText(`前区: ${randomFront}`, 20, currentY)
-            currentY += 20
-            ctx.fillText(`后区: ${randomBack}`, 20, currentY)
-            currentY += 35
-          }
-          
-          // 绘制免责声明
-          ctx.setFillStyle('#999999')
-          ctx.setFontSize(12)
-          ctx.setTextAlign('center')
-          ctx.fillText('仅供娱乐参考，理性购彩', width, height - 20)
-          
-          // 绘制时间
-          const now = new Date()
-          const timeStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
-          ctx.fillText(timeStr, width, height - 5)
-          
-          // 绘制完成后生成图片
-          ctx.draw(false, () => {
-            // 生成临时图片
-            wx.canvasToTempFilePath({
-              canvasId: canvasId,
-              success: function(res) {
-                const tempFilePath = res.tempFilePath
-                
-                // 隐藏加载提示
-                wx.hideToast()
-                
-                // 预览图片
-                wx.previewImage({
-                  urls: [tempFilePath],
-                  success: function() {
-                    // 保存图片到相册
-                    wx.saveImageToPhotosAlbum({
-                      filePath: tempFilePath,
-                      success: function() {
-                        Toast({
-                          context: that,
-                          selector: '#t-toast',
-                          message: '图片已保存到相册',
-                          theme: 'success',
-                          direction: 'column'
-                        })
-                      },
-                      fail: function(err) {
-                        console.error('保存图片失败:', err)
-                        Toast({
-                          context: that,
-                          selector: '#t-toast',
-                          message: '请授权保存到相册',
-                          theme: 'warning',
-                          direction: 'column'
-                        })
-                      }
-                    })
-                  },
-                  fail: function(err) {
-                    console.error('预览图片失败:', err)
-                    Toast({
-                      context: that,
-                      selector: '#t-toast',
-                      message: '生成图片失败',
-                      theme: 'error',
-                      direction: 'column'
-                    })
-                  }
-                })
-              },
-              fail: function(err) {
-                console.error('生成临时图片失败:', err)
-                Toast({
-                  context: that,
-                  selector: '#t-toast',
-                  message: '生成图片失败',
-                  theme: 'error',
-                  direction: 'column'
-                })
-              }
-            }, that)
-          })
-        } else {
-          Toast({
-            context: that,
-            selector: '#t-toast',
-            message: '页面信息获取失败',
-            theme: 'error',
-            direction: 'column'
-          })
-        }
+        })
+    } catch (error) {
+      wx.hideLoading()
+      console.error('分享图片生成异常:', error)
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '生成失败，请重试',
+        theme: 'error',
+        direction: 'column'
       })
+    }
+  },
+
+  // 绘制号码球的辅助方法
+  drawNumberBalls(ctx, frontNumbers, backNumbers, startY) {
+    const ballRadius = 18
+    const ballSpacing = 35
+    let currentX = 30
+    
+    // 绘制前区号码
+    ctx.font = 'bold 14px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    
+    frontNumbers.forEach((num, index) => {
+      // 绘制红色球
+      ctx.fillStyle = '#ff4444'
+      ctx.beginPath()
+      ctx.arc(currentX + ballRadius, startY + ballRadius, ballRadius, 0, 2 * Math.PI)
+      ctx.fill()
+      
+      // 绘制数字
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(num, currentX + ballRadius, startY + ballRadius)
+      
+      currentX += ballSpacing + ballRadius * 2
+    })
+    
+    // 绘制加号
+    ctx.fillStyle = '#666666'
+    ctx.font = 'bold 20px sans-serif'
+    ctx.fillText('+', currentX + 10, startY + ballRadius)
+    currentX += 35
+    
+    // 绘制后区号码
+    backNumbers.forEach((num, index) => {
+      // 绘制蓝色球
+      ctx.fillStyle = '#4444ff'
+      ctx.beginPath()
+      ctx.arc(currentX + ballRadius, startY + ballRadius, ballRadius, 0, 2 * Math.PI)
+      ctx.fill()
+      
+      // 绘制数字
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(num, currentX + ballRadius, startY + ballRadius)
+      
+      currentX += ballSpacing + ballRadius * 2
+    })
+  },
+
+  // 简化版分享功能 - 使用文字分享
+  shareText() {
+    const that = this
+    
+    if (!that.data.showRecommendations && !that.data.showRandom) {
+      Toast({
+        context: that,
+        selector: '#t-toast',
+        message: '请先生成号码再分享',
+        theme: 'warning',
+        direction: 'column'
+      })
+      return
+    }
+
+    let shareText = '🎯 大乐透号码推荐\n\n'
+    
+    if (that.data.showRecommendations) {
+      shareText += '🔥 热门推荐:\n'
+      shareText += `前区: ${that.data.hotNumbers.front.join(' ')}\n`
+      shareText += `后区: ${that.data.hotNumbers.back.join(' ')}\n\n`
+      
+      shareText += '❄️ 冷门推荐:\n'
+      shareText += `前区: ${that.data.coldNumbers.front.join(' ')}\n`
+      shareText += `后区: ${that.data.coldNumbers.back.join(' ')}\n\n`
+    }
+    
+    if (that.data.showRandom) {
+      shareText += '🎲 随机号码:\n'
+      shareText += `前区: ${that.data.randomNumbers.front.join(' ')}\n`
+      shareText += `后区: ${that.data.randomNumbers.back.join(' ')}\n\n`
+    }
+    
+    shareText += `📊 数据总量: ${that.data.totalRecords}条\n`
+    shareText += `📅 最新期次: ${that.data.latestPeriod}\n`
+    shareText += `⏰ ${new Date().toLocaleString()}\n\n`
+    shareText += '仅供娱乐参考，理性购彩'
+    
+    // 复制到剪贴板
+    wx.setClipboardData({
+      data: shareText,
+      success: function() {
+        Toast({
+          context: that,
+          selector: '#t-toast',
+          message: '内容已复制，可粘贴分享',
+          theme: 'success',
+          direction: 'column'
+        })
+      }
+    })
   },
 
   // 转发功能
   onShareAppMessage() {
+    const that = this
+    let title = '大乐透号码推荐 - 智能分析系统'
+    
+    // 如果有推荐数据，添加到标题
+    if (that.data.showRecommendations) {
+      const hotFront = that.data.hotNumbers.front.slice(0, 3).join(' ')
+      title = `大乐透推荐: ${hotFront}...`
+    } else if (that.data.showRandom) {
+      const randomFront = that.data.randomNumbers.front.slice(0, 3).join(' ')
+      title = `大乐透随机: ${randomFront}...`
+    }
+    
     return {
-      title: '大乐透号码推荐 - 智能分析系统',
+      title: title,
       path: '/pages/index/index',
       imageUrl: '/images/share-cover.jpg'
     }
@@ -431,8 +566,20 @@ Page({
 
   // 分享到朋友圈
   onShareTimeline() {
+    const that = this
+    let title = '大乐透号码推荐 - 智能分析系统'
+    
+    // 如果有推荐数据，添加到标题
+    if (that.data.showRecommendations) {
+      const hotFront = that.data.hotNumbers.front.slice(0, 3).join(' ')
+      title = `大乐透推荐: ${hotFront}...`
+    } else if (that.data.showRandom) {
+      const randomFront = that.data.randomNumbers.front.slice(0, 3).join(' ')
+      title = `大乐透随机: ${randomFront}...`
+    }
+    
     return {
-      title: '大乐透号码推荐 - 智能分析系统',
+      title: title,
       imageUrl: '/images/share-cover.jpg'
     }
   }
