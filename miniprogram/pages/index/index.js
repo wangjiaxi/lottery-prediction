@@ -90,8 +90,6 @@ Page({
       that.setData({ updatingData: false })
 
       if (res.result.success) {
-        const newRecords = res.result.new_records || 0
-        
         const isLatest = res.result.is_latest
         const newRecords = res.result.new_records || 0
         
