@@ -9,8 +9,11 @@
     </t-cell-group>
     <view style="margin-top: 16rpx;">
       <t-button theme="primary" block loading="{{updatingData}}" bind:tap="updateData">
-        {{updatingData ? '获取中...' : '获取最新数据'}}
+        {{updatingData ? '检查更新中...' : '检查并更新数据'}}
       </t-button>
+    </view>
+    <view style="font-size: 24rpx; color: #999; margin-top: 8rpx; text-align: center;">
+      自动检查官方数据，如发现新数据将自动更新
     </view>
   </view>
 

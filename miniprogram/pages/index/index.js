@@ -92,8 +92,20 @@ Page({
       if (res.result.success) {
         const newRecords = res.result.new_records || 0
         
-        if (newRecords > 0) {
-          // 显示新增的数据
+        const isLatest = res.result.is_latest
+        const newRecords = res.result.new_records || 0
+        
+        if (isLatest) {
+          // 数据已是最新
+          Toast({
+            context: that,
+            selector: '#t-toast',
+            message: '✅ 数据已是最新',
+            theme: 'success',
+            direction: 'column'
+          })
+        } else if (newRecords > 0) {
+          // 有新数据
           const newData = res.result.new_data || []
           let newDataInfo = ''
           if (newData.length > 0) {
@@ -103,15 +115,15 @@ Page({
           Toast({
             context: that,
             selector: '#t-toast',
-            message: `成功新增 ${newRecords} 条记录`,
+            message: `🎉 发现并更新 ${newRecords} 条新记录`,
             theme: 'success',
             direction: 'column'
           })
           
           // 显示新增数据详情
           wx.showModal({
-            title: '📊 新增数据详情',
-            content: `新增 ${newRecords} 条记录：\n\n${newDataInfo}`,
+            title: '📊 数据更新成功',
+            content: `发现并更新 ${newRecords} 条新记录：\n\n${newDataInfo}`,
             showCancel: false,
             confirmText: '知道了'
           })
@@ -119,8 +131,8 @@ Page({
           Toast({
             context: that,
             selector: '#t-toast',
-            message: '数据已是最新',
-            theme: 'warning',
+            message: '数据检查完成',
+            theme: 'info',
             direction: 'column'
           })
         }

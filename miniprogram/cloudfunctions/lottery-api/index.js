@@ -32,6 +32,103 @@ try {
   lotteryData = []
 }
 
+// 获取最新大乐透数据
+async function fetchLatestLotteryData() {
+  try {
+    console.log('开始从官方API获取最新数据...')
+    
+    const https = require('https')
+    const url = 'https://webapi.sporttery.cn/gateway/lottery/getHistoryPageListV1.qry?gameNo=85&provinceId=0&pageSize=10&isVerify=1'
+    
+    return new Promise((resolve, reject) => {
+      const req = https.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Referer': 'https://static.sporttery.cn/',
+          'Accept': 'application/json, text/plain, */*'
+        }
+      }, (res) => {
+        let data = ''
+        
+        res.on('data', chunk => {
+          data += chunk
+        })
+        
+        res.on('end', () => {
+          try {
+            const response = JSON.parse(data)
+            
+            if (!response.success) {
+              console.error('API返回错误:', response.errorMessage)
+              return resolve([])
+            }
+            
+            const lotteryList = response.value?.list || []
+            console.log(`API返回 ${lotteryList.length} 条数据`)
+            
+            // 解析数据
+            const parsedData = []
+            for (const item of lotteryList) {
+              try {
+                const resultStr = item.lotteryDrawResult || ''
+                const numbers = resultStr.split(' ')
+                
+                if (numbers.length >= 7) {
+                  parsedData.push({
+                    period: item.lotteryDrawNum || '',
+                    date: item.lotteryDrawTime || '',
+                    front_numbers: numbers.slice(0, 5),
+                    back_numbers: numbers.slice(5, 7),
+                    sales_amount: item.totalSaleAmount || '',
+                    pool_balance: item.poolBalanceAfterdraw || ''
+                  })
+                }
+              } catch (parseError) {
+                console.error('解析数据项失败:', parseError)
+                continue
+              }
+            }
+            
+            console.log(`成功解析 ${parsedData.length} 条有效数据`)
+            resolve(parsedData)
+            
+          } catch (parseError) {
+            console.error('解析API响应失败:', parseError)
+            resolve([])
+          }
+        })
+      })
+      
+      req.on('error', (error) => {
+        console.error('API请求失败:', error)
+        resolve([])
+      })
+      
+      req.setTimeout(15000, () => {
+        req.destroy()
+        console.error('API请求超时')
+        resolve([])
+      })
+    })
+    
+  } catch (error) {
+    console.error('获取最新数据异常:', error)
+    return []
+  }
+}
+
+// 保存数据到文件
+function saveDataToFile(data) {
+  try {
+    const dataPath = path.join(__dirname, 'lottery_data.json')
+    const jsonContent = JSON.stringify(data, null, 2)
+    fs.writeFileSync(dataPath, jsonContent, 'utf8')
+    console.log('✅ 数据已保存到文件')
+  } catch (error) {
+    throw new Error(`保存文件失败: ${error.message}`)
+  }
+}
+
 exports.main = async (event, context) => {
   console.log('云函数被调用，参数:', JSON.stringify(event))
   
@@ -57,41 +154,60 @@ exports.main = async (event, context) => {
         }
         
       case 'update_data':
-        console.log('执行真实数据更新')
+        console.log('执行智能数据更新检查')
         try {
-        // 获取最新的实际数据（从本地数据文件中最新的几期）
-        const recentData = lotteryData.slice(0, 5) // 获取最新的5期数据
-        
-        const mockNewData = recentData.map(item => ({
-          ...item,
-          // 确保数据格式正确
-          period: item.period || '',
-          date: item.date || '',
-          front_numbers: item.front_numbers || [],
-          back_numbers: item.back_numbers || []
-        })).filter(item => item.period && item.front_numbers.length === 5 && item.back_numbers.length === 2)
+          // 1. 检查当前数据是否最新
+          const currentLatest = lotteryData.length > 0 ? lotteryData[0] : null
+          console.log('当前最新期次:', currentLatest ? currentLatest.period : '无')
           
-          // 检查这些数据是否已存在
-          let newRecords = []
-          mockNewData.forEach(newItem => {
-            const exists = lotteryData.some(item => item.period === newItem.period)
-            if (!exists) {
-              newRecords.push(newItem)
+          // 2. 尝试从官方API获取最新数据
+          const latestData = await fetchLatestLotteryData()
+          
+          if (!latestData || latestData.length === 0) {
+            return {
+              success: false,
+              message: '无法获取最新数据，请稍后重试'
             }
-          })
+          }
           
-          // 添加新数据到开头
+          console.log('从API获取到最新数据:', latestData.length, '条')
+          
+          // 3. 对比数据，找出需要更新的记录
+          const currentPeriods = new Set(lotteryData.map(item => item.period))
+          const newRecords = latestData.filter(item => !currentPeriods.has(item.period))
+          
+          if (newRecords.length === 0) {
+            console.log('数据已是最新')
+            return {
+              success: true,
+              message: '数据已是最新',
+              new_records: 0,
+              total_records: lotteryData.length,
+              is_latest: true
+            }
+          }
+          
+          // 4. 更新数据
           lotteryData = [...newRecords, ...lotteryData]
           
-          console.log('数据更新完成，新增记录数:', newRecords.length)
+          console.log(`数据更新完成，新增 ${newRecords.length} 条记录`)
+          
+          // 5. 尝试保存到文件（在云函数环境中可能失败）
+          try {
+            saveDataToFile(lotteryData)
+          } catch (saveError) {
+            console.warn('保存到文件失败，但内存数据已更新:', saveError.message)
+          }
           
           return {
             success: true,
-            message: `数据更新成功，新增 ${newRecords.length} 条记录`,
+            message: `发现并更新 ${newRecords.length} 条新记录`,
             new_records: newRecords.length,
             total_records: lotteryData.length,
-            new_data: newRecords
+            new_data: newRecords,
+            is_latest: false
           }
+          
         } catch (error) {
           console.error('数据更新失败:', error)
           return {
