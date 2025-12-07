@@ -89,14 +89,14 @@
     
     <view style="display: flex; gap: 16rpx; margin-bottom: 16rpx;">
       <t-button theme="warning" style="flex: 1;" bind:tap="shareImage">
-        📷 查看图片
+        📱 微信分享
       </t-button>
       <t-button theme="primary" variant="outline" style="flex: 1;" bind:tap="shareText">
         📝 复制文字
       </t-button>
     </view>
     <view style="font-size: 24rpx; color: #999; text-align: center;">
-      图片为固定模板，文字包含当前推荐号码
+      微信分享打开分享菜单，文字分享可粘贴到任何地方
     </view>
   </view>
 

@@ -39,6 +39,14 @@ Page({
     this.loadDataStatus()
   },
 
+  // 页面显示分享菜单
+  onReady() {
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    })
+  },
+
   // 加载数据状态
   loadDataStatus() {
     const that = this
@@ -84,13 +92,38 @@ Page({
       if (res.result.success) {
         const newRecords = res.result.new_records || 0
         
-        Toast({
-          context: that,
-          selector: '#t-toast',
-          message: newRecords > 0 ? `新增 ${newRecords} 条记录` : '数据已是最新',
-          theme: 'success',
-          direction: 'column'
-        })
+        if (newRecords > 0) {
+          // 显示新增的数据
+          const newData = res.result.new_data || []
+          let newDataInfo = ''
+          if (newData.length > 0) {
+            newDataInfo = newData.map(item => `期次 ${item.period}: ${item.front_numbers.join(' ')} + ${item.back_numbers.join(' ')}`).join('\n')
+          }
+          
+          Toast({
+            context: that,
+            selector: '#t-toast',
+            message: `成功新增 ${newRecords} 条记录`,
+            theme: 'success',
+            direction: 'column'
+          })
+          
+          // 显示新增数据详情
+          wx.showModal({
+            title: '📊 新增数据详情',
+            content: `新增 ${newRecords} 条记录：\n\n${newDataInfo}`,
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        } else {
+          Toast({
+            context: that,
+            selector: '#t-toast',
+            message: '数据已是最新',
+            theme: 'warning',
+            direction: 'column'
+          })
+        }
         
         // 刷新数据状态
         that.loadDataStatus()
@@ -237,7 +270,7 @@ Page({
     })
   },
 
-  // 分享功能 - 使用固定图片
+  // 分享功能 - 简化版本
   shareImage() {
     const that = this
     
@@ -253,45 +286,22 @@ Page({
       return
     }
     
-    // 直接预览固定图片
-    wx.previewImage({
-      urls: ['/miniprogram/分享页.png'],
-      current: 0,
+    // 直接触发微信分享
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline'],
       success: function() {
         Toast({
           context: that,
           selector: '#t-toast',
-          message: '长按图片可保存到相册',
+          message: '请点击右上角分享',
           theme: 'success',
-          direction: 'column',
-          duration: 3000
+          direction: 'column'
         })
       },
-      fail: function(err) {
-        console.error('预览图片失败:', err)
-        // 尝试保存到相册
-        wx.saveImageToPhotosAlbum({
-          filePath: '/miniprogram/分享页.png',
-          success: function() {
-            Toast({
-              context: that,
-              selector: '#t-toast',
-              message: '图片已保存到相册',
-              theme: 'success',
-              direction: 'column'
-            })
-          },
-          fail: function(saveErr) {
-            console.error('保存图片失败:', saveErr)
-            Toast({
-              context: that,
-              selector: '#t-toast',
-              message: '请长按图片保存',
-              theme: 'warning',
-              direction: 'column'
-            })
-          }
-        })
+      fail: function() {
+        // 备用方案：复制文字到剪贴板
+        that.shareText()
       }
     })
   },
@@ -352,41 +362,41 @@ Page({
   // 转发功能
   onShareAppMessage() {
     const that = this
-    let title = '大乐透号码推荐 - 智能分析系统'
+    let title = '🎯 大乐透号码推荐 - 智能分析系统'
     
     // 如果有推荐数据，添加到标题
     if (that.data.showRecommendations) {
       const hotFront = that.data.hotNumbers.front.slice(0, 3).join(' ')
-      title = `大乐透推荐: ${hotFront}...`
+      title = `🔥 大乐透推荐: ${hotFront}...`
     } else if (that.data.showRandom) {
       const randomFront = that.data.randomNumbers.front.slice(0, 3).join(' ')
-      title = `大乐透随机: ${randomFront}...`
+      title = `🎲 大乐透随机: ${randomFront}...`
     }
     
     return {
       title: title,
       path: '/pages/index/index',
-      imageUrl: '/miniprogram/分享页.png'
+      imageUrl: '分享页.png'
     }
   },
 
   // 分享到朋友圈
   onShareTimeline() {
     const that = this
-    let title = '大乐透号码推荐 - 智能分析系统'
+    let title = '🎯 大乐透号码推荐 - 智能分析系统'
     
     // 如果有推荐数据，添加到标题
     if (that.data.showRecommendations) {
       const hotFront = that.data.hotNumbers.front.slice(0, 3).join(' ')
-      title = `大乐透推荐: ${hotFront}...`
+      title = `🔥 大乐透推荐: ${hotFront}...`
     } else if (that.data.showRandom) {
       const randomFront = that.data.randomNumbers.front.slice(0, 3).join(' ')
-      title = `大乐透随机: ${randomFront}...`
+      title = `🎲 大乐透随机: ${randomFront}...`
     }
     
     return {
       title: title,
-      imageUrl: '/miniprogram/分享页.png'
+      imageUrl: '分享页.png'
     }
   }
 })

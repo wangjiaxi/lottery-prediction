@@ -160,17 +160,17 @@ Page({
   // 转发功能
   onShareAppMessage() {
     return {
-      title: '大乐透历史数据 - 查看往期开奖结果',
+      title: '📊 大乐透历史数据 - 查看往期开奖结果',
       path: '/pages/history/history',
-      imageUrl: '/miniprogram/分享页.png'
+      imageUrl: '分享页.png'
     }
   },
 
   // 分享到朋友圈
   onShareTimeline() {
     return {
-      title: '大乐透历史数据 - 查看往期开奖结果',
-      imageUrl: '/miniprogram/分享页.png'
+      title: '📊 大乐透历史数据 - 查看往期开奖结果',
+      imageUrl: '分享页.png'
     }
   }
 })
