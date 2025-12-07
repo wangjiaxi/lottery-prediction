@@ -8,28 +8,40 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 let lotteryData = []
 
 // 初始化时加载数据
-try {
-  console.log('开始加载数据文件...')
-  const dataPath = path.join(__dirname, 'lottery_data.json')
-  console.log('数据文件路径:', dataPath)
-  
-  if (fs.existsSync(dataPath)) {
-    const fileContent = fs.readFileSync(dataPath, 'utf8')
-    lotteryData = JSON.parse(fileContent)
-    console.log('✅ 数据加载成功，数量:', lotteryData.length)
-  } else {
-    console.log('❌ 数据文件不存在')
-    // 使用备份数据
-    lotteryData = [
-      { period: '25138', date: '2024-12-04', front_numbers: ['05', '12', '18', '25', '33'], back_numbers: ['04', '11'] },
-      { period: '25137', date: '2024-12-02', front_numbers: ['08', '15', '22', '30', '35'], back_numbers: ['06', '09'] },
-      { period: '25136', date: '2024-11-29', front_numbers: ['03', '11', '19', '26', '31'], back_numbers: ['07', '10'] }
-    ]
-    console.log('使用备份数据，数量:', lotteryData.length)
+async function initializeData() {
+  try {
+    console.log('开始加载数据文件...')
+    const dataPath = path.join(__dirname, 'lottery_data.json')
+    
+    if (fs.existsSync(dataPath)) {
+      const fileContent = fs.readFileSync(dataPath, 'utf8')
+      lotteryData = JSON.parse(fileContent)
+      console.log('✅ 本地数据加载成功，数量:', lotteryData.length)
+    } else {
+      console.log('❌ 本地数据文件不存在，使用备份数据')
+      // 使用精简的备份数据
+      lotteryData = [
+        { period: '25139', date: '2025-12-06', front_numbers: ['08', '18', '22', '30', '35'], back_numbers: ['01', '04'] },
+        { period: '25138', date: '2024-12-04', front_numbers: ['05', '12', '18', '25', '33'], back_numbers: ['04', '11'] },
+        { period: '25137', date: '2024-12-02', front_numbers: ['08', '15', '22', '30', '35'], back_numbers: ['06', '09'] },
+        { period: '25136', date: '2024-11-29', front_numbers: ['03', '11', '19', '26', '31'], back_numbers: ['07', '10'] },
+        { period: '25135', date: '2024-11-25', front_numbers: ['06', '13', '20', '27', '32'], back_numbers: ['02', '11'] }
+      ]
+      console.log('使用备份数据，数量:', lotteryData.length)
+    }
+  } catch (error) {
+    console.error('数据加载失败:', error)
+    lotteryData = []
   }
-} catch (error) {
-  console.error('数据加载失败:', error)
-  lotteryData = []
+}
+
+// 在exports.main中初始化数据
+let dataInitialized = false
+async function ensureDataInitialized() {
+  if (!dataInitialized) {
+    await initializeData()
+    dataInitialized = true
+  }
 }
 
 // 获取最新大乐透数据
@@ -131,6 +143,9 @@ function saveDataToFile(data) {
 
 exports.main = async (event, context) => {
   console.log('云函数被调用，参数:', JSON.stringify(event))
+  
+  // 确保数据已初始化
+  await ensureDataInitialized()
   
   const { action, strategy = 'all', offset = 0, limit = 10 } = event
   

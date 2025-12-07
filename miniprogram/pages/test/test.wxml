@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="title">云函数测试页面</view>
+  
+  <view class="button-group">
+    <button bindtap="testCloudFunction" type="primary">测试云函数</button>
+    <button bindtap="testDataStatus" type="default">测试数据状态</button>
+  </view>
+  
+  <view class="result" wx:if="{{testResult}}">
+    <text>测试结果: {{testResult}}</text>
+  </view>
+</view>
+
+<style>
+.container {
+  padding: 40rpx;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+button {
+  margin: 10rpx 0;
+}
+
+.result {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+}
+</style>
