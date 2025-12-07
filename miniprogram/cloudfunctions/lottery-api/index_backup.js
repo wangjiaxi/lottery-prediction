@@ -29,19 +29,6 @@ try {
   ]
 }
 
- catch (error) {
-  console.error('读取数据文件失败:', error)
-  // 使用默认数据
-  mockHistory = [
-    {
-      period: '25138',
-      date: '2024-12-04',
-      front_numbers: ['05', '12', '18', '25', '33'],
-      back_numbers: ['04', '11']
-    }
-  ]
-}
-
 exports.main = async (event, context) => {
   const { action, strategy = 'all', offset = 0, limit = 10 } = event
   
