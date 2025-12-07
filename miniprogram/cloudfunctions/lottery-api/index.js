@@ -59,22 +59,17 @@ exports.main = async (event, context) => {
       case 'update_data':
         console.log('执行真实数据更新')
         try {
-          // 模拟从外部API获取最新数据
-          // 这里可以集成真实的体育彩票API
-          const mockNewData = [
-            {
-              period: '25139',
-              date: '2024-12-05',
-              front_numbers: ['07', '14', '21', '28', '34'],
-              back_numbers: ['03', '08']
-            },
-            {
-              period: '25140', 
-              date: '2024-12-07',
-              front_numbers: ['02', '09', '16', '23', '30'],
-              back_numbers: ['01', '12']
-            }
-          ]
+        // 获取最新的实际数据（从本地数据文件中最新的几期）
+        const recentData = lotteryData.slice(0, 5) // 获取最新的5期数据
+        
+        const mockNewData = recentData.map(item => ({
+          ...item,
+          // 确保数据格式正确
+          period: item.period || '',
+          date: item.date || '',
+          front_numbers: item.front_numbers || [],
+          back_numbers: item.back_numbers || []
+        })).filter(item => item.period && item.front_numbers.length === 5 && item.back_numbers.length === 2)
           
           // 检查这些数据是否已存在
           let newRecords = []

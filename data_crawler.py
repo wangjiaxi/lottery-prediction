@@ -61,9 +61,12 @@ class LotteryCrawler:
                         front_numbers = numbers[:5]  # 前区5个号码
                         back_numbers = numbers[5:7]  # 后区2个号码
                         
+                        # 日期保持原样，API返回的数据是正确的
+                        draw_time = item.get('lotteryDrawTime', '')
+                        
                         lottery_data.append({
                             'period': item.get('lotteryDrawNum', ''),
-                            'date': item.get('lotteryDrawTime', ''),
+                            'date': draw_time,
                             'front_numbers': front_numbers,
                             'back_numbers': back_numbers,
                             'sales_amount': item.get('totalSaleAmount', ''),
@@ -111,6 +114,37 @@ class LotteryCrawler:
         print(f"正在获取最近 {limit} 期数据...")
         new_data = self.get_lottery_data(limit)
         
+        # 验证数据有效性
+        valid_data = []
+        current_date = datetime.now()
+        
+        for item in new_data:
+            try:
+                # 验证期次格式
+                period = item.get('period', '')
+                if not period or len(period) != 5:
+                    print(f"跳过无效期次: {period}")
+                    continue
+                
+                # 日期验证 - 保持API原始数据
+                item_date = item.get('date', '')
+                
+                # 验证号码格式
+                front = item.get('front_numbers', [])
+                back = item.get('back_numbers', [])
+                
+                if len(front) == 5 and len(back) == 2:
+                    valid_data.append(item)
+                else:
+                    print(f"跳过号码格式错误的数据: {item}")
+                    
+            except Exception as e:
+                print(f"验证数据时出错: {e}, 数据: {item}")
+                continue
+        
+        print(f"验证后有效数据: {len(valid_data)} 条")
+        new_data = valid_data
+        
         if new_data:
             print(f"获取到 {len(new_data)} 期数据")
             
@@ -126,9 +160,19 @@ class LotteryCrawler:
             # 只添加新的期次
             unique_new_data = [item for item in new_data if item['period'] not in existing_periods]
             
+            # 额外验证：检查期次是否递增
+            if full_data and unique_new_data:
+                latest_period = full_data[0].get('period', '') if full_data else ''
+                for new_item in unique_new_data:
+                    new_period = new_item.get('period', '')
+                    if new_period <= latest_period:
+                        print(f"警告: 新期次 {new_period} 不大于最新期次 {latest_period}")
+            
             if unique_new_data:
                 all_data = unique_new_data + full_data
-                print(f"新增 {len(unique_new_data)} 期数据")
+                print(f"新增 {len(unique_new_data)} 期数据:")
+                for item in unique_new_data:
+                    print(f"  期次 {item['period']}: {item['date']} {item['front_numbers']} + {item['back_numbers']}")
             else:
                 all_data = full_data
                 print("没有新的数据需要添加，数据已是最新")
